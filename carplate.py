@@ -43,11 +43,15 @@ def recognize_number_plate(image_path):
     cv2.destroyAllWindows()
 
 # Main block to execute the function using argv
-if __name__ == "__main__":
+def main():
     # Check if image path argument is provided
     if len(sys.argv) != 2:
-        print("Usage: python read_number_plate.py <image_path>")
+        print("Usage: python carplate.py <image_path>")
         sys.exit(1)
 
     image_path = sys.argv[1]
     recognize_number_plate(image_path)
+
+
+if __name__ == "__main__":
+    main()

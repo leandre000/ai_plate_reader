@@ -56,89 +56,94 @@ def draw_nostril_circle(img, face_landmarks, outer_idx, inner_idx, color=(0, 165
     if radius > 0:
         cv2.circle(img, (cx, cy), radius, color, 2)
 
-# Open webcam
-cap = cv2.VideoCapture(0)
+def main():
+    """Run the face tracker demo (webcam)."""
+    cap = cv2.VideoCapture(0)
 
-with mp_face_mesh.FaceMesh(
-    static_image_mode=False,
-    max_num_faces=10,
-    refine_landmarks=True,
-    min_detection_confidence=0.5,
-    min_tracking_confidence=0.5
-) as face_mesh:
+    with mp_face_mesh.FaceMesh(
+        static_image_mode=False,
+        max_num_faces=10,
+        refine_landmarks=True,
+        min_detection_confidence=0.5,
+        min_tracking_confidence=0.5
+    ) as face_mesh:
 
-    while cap.isOpened():
-        success, frame = cap.read()
-        if not success:
-            break
+        while cap.isOpened():
+            success, frame = cap.read()
+            if not success:
+                break
 
-        frame = cv2.flip(frame, 1)
-        img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = face_mesh.process(img_rgb)
+            frame = cv2.flip(frame, 1)
+            img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            results = face_mesh.process(img_rgb)
 
-        if results.multi_face_landmarks:
-            for face_landmarks in results.multi_face_landmarks:
+            if results.multi_face_landmarks:
+                for face_landmarks in results.multi_face_landmarks:
 
-                # --- TESSELATION (magenta, unchanged) ---
-                mp_draw.draw_landmarks(
-                    image=frame,
-                    landmark_list=face_landmarks,
-                    connections=mp_face_mesh.FACEMESH_TESSELATION,  # ONE 'L'
-                    landmark_drawing_spec=drawing_spec,
-                    connection_drawing_spec=mesh_spec
-                )
-
-                # --- EYE CONTOURS (green) ---
-                if hasattr(mp_face_mesh, "FACEMESH_LEFT_EYE"):
+                    # --- TESSELATION (magenta, unchanged) ---
                     mp_draw.draw_landmarks(
                         image=frame,
                         landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_LEFT_EYE,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=eye_spec
-                    )
-                if hasattr(mp_face_mesh, "FACEMESH_RIGHT_EYE"):
-                    mp_draw.draw_landmarks(
-                        image=frame,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_RIGHT_EYE,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=eye_spec
+                        connections=mp_face_mesh.FACEMESH_TESSELATION,
+                        landmark_drawing_spec=drawing_spec,
+                        connection_drawing_spec=mesh_spec
                     )
 
-                # --- LIP CONTOUR (red) ---
-                if hasattr(mp_face_mesh, "FACEMESH_LIPS"):
-                    mp_draw.draw_landmarks(
-                        image=frame,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_LIPS,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=lips_spec
-                    )
+                    # --- EYE CONTOURS (green) ---
+                    if hasattr(mp_face_mesh, "FACEMESH_LEFT_EYE"):
+                        mp_draw.draw_landmarks(
+                            image=frame,
+                            landmark_list=face_landmarks,
+                            connections=mp_face_mesh.FACEMESH_LEFT_EYE,
+                            landmark_drawing_spec=None,
+                            connection_drawing_spec=eye_spec
+                        )
+                    if hasattr(mp_face_mesh, "FACEMESH_RIGHT_EYE"):
+                        mp_draw.draw_landmarks(
+                            image=frame,
+                            landmark_list=face_landmarks,
+                            connections=mp_face_mesh.FACEMESH_RIGHT_EYE,
+                            landmark_drawing_spec=None,
+                            connection_drawing_spec=eye_spec
+                        )
 
-                # --- NOSE CONTOUR (cyan) ---
-                if hasattr(mp_face_mesh, "FACEMESH_NOSE"):
-                    mp_draw.draw_landmarks(
-                        image=frame,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_NOSE,
-                        landmark_drawing_spec=None,
-                        connection_drawing_spec=nose_spec
-                    )
+                    # --- LIP CONTOUR (red) ---
+                    if hasattr(mp_face_mesh, "FACEMESH_LIPS"):
+                        mp_draw.draw_landmarks(
+                            image=frame,
+                            landmark_list=face_landmarks,
+                            connections=mp_face_mesh.FACEMESH_LIPS,
+                            landmark_drawing_spec=None,
+                            connection_drawing_spec=lips_spec
+                        )
 
-                # --- NOSTRIL CIRCLES (orange) ---
-                # left nostril: outer=98, inner=97
-                draw_nostril_circle(frame, face_landmarks, 98, 97)
-                # right nostril: outer=327, inner=326
-                draw_nostril_circle(frame, face_landmarks, 327, 326)
+                    # --- NOSE CONTOUR (cyan) ---
+                    if hasattr(mp_face_mesh, "FACEMESH_NOSE"):
+                        mp_draw.draw_landmarks(
+                            image=frame,
+                            landmark_list=face_landmarks,
+                            connections=mp_face_mesh.FACEMESH_NOSE,
+                            landmark_drawing_spec=None,
+                            connection_drawing_spec=nose_spec
+                        )
 
-                # --- IRIS CIRCLES (yellow) ---
-                draw_iris_circle(frame, face_landmarks, LEFT_IRIS)
-                draw_iris_circle(frame, face_landmarks, RIGHT_IRIS)
+                    # --- NOSTRIL CIRCLES (orange) ---
+                    # left nostril: outer=98, inner=97
+                    draw_nostril_circle(frame, face_landmarks, 98, 97)
+                    # right nostril: outer=327, inner=326
+                    draw_nostril_circle(frame, face_landmarks, 327, 326)
 
-        cv2.imshow("Face Mesh + Regions (Eyes/Lips/Nose/Nostrils/Iris)", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+                    # --- IRIS CIRCLES (yellow) ---
+                    draw_iris_circle(frame, face_landmarks, LEFT_IRIS)
+                    draw_iris_circle(frame, face_landmarks, RIGHT_IRIS)
 
-cap.release()
-cv2.destroyAllWindows()
+            cv2.imshow("Face Mesh + Regions (Eyes/Lips/Nose/Nostrils/Iris)", frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()
